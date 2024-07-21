@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>µ¡¼À Ä«µå °ÔÀÓ</title>
+    <title>ë§ì…ˆ ì¹´ë“œ ê²Œì„</title>
     <style>
         * {
             box-sizing: border-box;
         }
         body {
-            font-family: 'Malgun Gothic', '¸¼Àº °íµñ', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Lato', 'Helvetica', 'Arial', 'Malgun Gothic', 'ë§‘ì€ ê³ ë”•', sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
@@ -111,6 +111,7 @@
         @media (max-width: 768px) {
             body {
                 padding: 10px;
+                font-size: 16px;
             }
             #game-screen {
                 display: flex;
@@ -143,19 +144,19 @@
 </head>
 <body>
     <div id="setup">
-        <h1>µ¡¼À Ä«µå °ÔÀÓ</h1>
+        <h1>ë§ì…ˆ ì¹´ë“œ ê²Œì„</h1>
         <div id="setup-line">
-            <input type="text" id="name-input" placeholder="ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä">
+            <input type="text" id="name-input" placeholder="ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš”">
             <select id="level-select">
-                <option value="1">1´Ü°è (1~9)</option>
-                <option value="2">2´Ü°è (1~50)</option>
-                <option value="3">3´Ü°è (11~99)</option>
+                <option value="1">1ë‹¨ê³„ (1~9)</option>
+                <option value="2">2ë‹¨ê³„ (1~50)</option>
+                <option value="3">3ë‹¨ê³„ (11~99)</option>
             </select>
-            <button id="start-game">°ÔÀÓ ½ÃÀÛ</button>
+            <button id="start-game">ê²Œì„ ì‹œì‘</button>
         </div>
         <input type="file" id="image-upload" accept="image/*">
         <div id="rankings">
-            <h2>¼øÀ§</h2>
+            <h2>ìˆœìœ„</h2>
             <div id="ranking-list"></div>
         </div>
     </div>
@@ -164,12 +165,12 @@
         <div id="game-board"></div>
         <div id="equation-container">
             <div id="equation"></div>
-            <input type="number" id="answer-input" placeholder="´ä">
-            <button id="submit-answer">Á¦Ãâ</button>
+            <input type="number" id="answer-input" placeholder="ë‹µ">
+            <button id="submit-answer">ì œì¶œ</button>
         </div>
-        <div id="score">Á¡¼ö: 0</div>
-        <div id="timer">³²Àº ½Ã°£: 60ÃÊ</div>
-        <div id="bonus-time" style="display:none;">º¸³Ê½º ±¸°£! (Á¡¼ö x2)</div>
+        <div id="score">ì ìˆ˜: 0</div>
+        <div id="timer">ë‚¨ì€ ì‹œê°„: 60ì´ˆ</div>
+        <div id="bonus-time" style="display:none;">ë³´ë„ˆìŠ¤ êµ¬ê°„! (ì ìˆ˜ x2)</div>
         <div id="incorrect-message"></div>
         <div id="numpad">
             <button class="numpad-btn" onclick="appendToAnswer(1)">1</button>
@@ -200,22 +201,22 @@
         let uploadedImage = null;
 
         const praises = [
-            "ÈÇ¸¢ÇØ¿ä!", "´ë´ÜÇØ¿ä!", "¸ÚÁ®¿ä!", "¿Ïº®ÇØ¿ä!", "³î¶ó¿ö¿ä!",
-            "ÃµÀç½Ã³×¿ä!", "ÃÖ°í¿¹¿ä!", "´ë¹ÚÀÌ¿¡¿ä!", "¹ÏÀ» ¼ö ¾ø¾î¿ä!", "È¯»óÀûÀÌ¿¡¿ä!",
-            "±²ÀåÇØ¿ä!", "¶Ù¾î³ª¿ä!", "±â°¡ ¸·Çô¿ä!", "´ë´ÜÇÑ ½Ç·ÂÀÌ¿¡¿ä!", "¿Í¿ì!",
-            "³¡³»ÁÖ´Âµ¥¿ä?", "´ç½ÅÀº ÃµÀç!", "³î¶ó¿î ½Ç·ÂÀÌ¿¡¿ä!", "´ë´ÜÇÑ µÎ³ú¿¹¿ä!", "¹Ú¼ö ÃÄ µå·Á¿ä!"
+            "í›Œë¥­í•´ìš”!", "ëŒ€ë‹¨í•´ìš”!", "ë©‹ì ¸ìš”!", "ì™„ë²½í•´ìš”!", "ë†€ë¼ì›Œìš”!",
+            "ì²œì¬ì‹œë„¤ìš”!", "ìµœê³ ì˜ˆìš”!", "ëŒ€ë°•ì´ì—ìš”!", "ë¯¿ì„ ìˆ˜ ì—†ì–´ìš”!", "í™˜ìƒì ì´ì—ìš”!",
+            "êµ‰ì¥í•´ìš”!", "ë›°ì–´ë‚˜ìš”!", "ê¸°ê°€ ë§‰í˜€ìš”!", "ëŒ€ë‹¨í•œ ì‹¤ë ¥ì´ì—ìš”!", "ì™€ìš°!",
+            "ëë‚´ì£¼ëŠ”ë°ìš”?", "ë‹¹ì‹ ì€ ì²œì¬!", "ë†€ë¼ìš´ ì‹¤ë ¥ì´ì—ìš”!", "ëŒ€ë‹¨í•œ ë‘ë‡Œì˜ˆìš”!", "ë°•ìˆ˜ ì³ ë“œë ¤ìš”!"
         ];
 
         const incorrectMessages = [
-            "¾Æ½¬¿ö¿ä.", "´ÙÀ½¿¡ ´õ ÀßÇÒ ¼ö ÀÖÀ» °Å¿¹¿ä.", "Á¶±İ¸¸ ´õ ÁıÁßÇØºÁ¿ä.", 
-            "½Ç¼ö´Â ´©±¸³ª ÇØ¿ä.", "Æ÷±âÇÏÁö ¸¶¼¼¿ä!", "Èû³»¼¼¿ä!", "´Ù½Ã ÇÑ ¹ø ÇØº¸¼¼¿ä.",
-            "°ÅÀÇ ´Ù ¿Ô¾î¿ä!", "Á¶±İ¸¸ ´õ ³ë·ÂÇÏ¸é µÅ¿ä!", "´ÙÀ½ ±âÈ¸¿¡ ²À ¼º°øÇÒ °Å¿¹¿ä!"
+            "ì•„ì‰¬ì›Œìš”.", "ë‹¤ìŒì— ë” ì˜í•  ìˆ˜ ìˆì„ ê±°ì˜ˆìš”.", "ì¡°ê¸ˆë§Œ ë” ì§‘ì¤‘í•´ë´ìš”.", 
+            "ì‹¤ìˆ˜ëŠ” ëˆ„êµ¬ë‚˜ í•´ìš”.", "í¬ê¸°í•˜ì§€ ë§ˆì„¸ìš”!", "í˜ë‚´ì„¸ìš”!", "ë‹¤ì‹œ í•œ ë²ˆ í•´ë³´ì„¸ìš”.",
+            "ê±°ì˜ ë‹¤ ì™”ì–´ìš”!", "ì¡°ê¸ˆë§Œ ë” ë…¸ë ¥í•˜ë©´ ë¼ìš”!", "ë‹¤ìŒ ê¸°íšŒì— ê¼­ ì„±ê³µí•  ê±°ì˜ˆìš”!"
         ];
 
         function startGame() {
             const name = document.getElementById('name-input').value.trim();
             if (!name) {
-                alert('ÀÌ¸§À» ÀÔ·ÂÇØÁÖ¼¼¿ä.');
+                alert('ì´ë¦„ì„ ì…ë ¥í•´ì£¼ì„¸ìš”.');
                 return;
             }
 
@@ -230,8 +231,8 @@
             document.getElementById('game-screen').style.display = 'block';
             const gameBoard = document.getElementById('game-board');
             gameBoard.innerHTML = '';
-            document.getElementById('score').textContent = 'Á¡¼ö: 0';
-            document.getElementById('timer').textContent = '³²Àº ½Ã°£: 60ÃÊ';
+            document.getElementById('score').textContent = 'ì ìˆ˜: 0';
+            document.getElementById('timer').textContent = 'ë‚¨ì€ ì‹œê°„: 60ì´ˆ';
             document.getElementById('answer-input').value = '';
             document.getElementById('equation').textContent = '';
             document.getElementById('praise').textContent = '';
@@ -305,23 +306,23 @@
                 score += pointsEarned;
 
                 const praise = praises[Math.floor(Math.random() * praises.length)];
-                document.getElementById('praise').innerHTML = `${praise}<br>+${pointsEarned}Á¡`;
+                document.getElementById('praise').innerHTML = `${praise} +${pointsEarned}ì `;
                 document.getElementById('incorrect-message').textContent = '';
 
                 if (consecutiveCorrect % 2 === 0) {
                     const bonus = consecutiveCorrect;
                     score += bonus;
-                    document.getElementById('praise').innerHTML += `<br>¿¬¼Ó Á¤´ä ${consecutiveCorrect}È¸<br>+${bonus}Á¡`;
+                    document.getElementById('praise').innerHTML += `<br>ì—°ì† ì •ë‹µ ${consecutiveCorrect}íšŒ +${bonus}ì `;
                 }
             } else {
                 score = Math.max(0, score - 1);
                 consecutiveCorrect = 0;
                 const incorrectMessage = incorrectMessages[Math.floor(Math.random() * incorrectMessages.length)];
-                document.getElementById('incorrect-message').textContent = `${incorrectMessage} -1Á¡`;
+                document.getElementById('incorrect-message').textContent = `${incorrectMessage} -1ì `;
                 document.getElementById('praise').textContent = '';
             }
 
-            document.getElementById('score').textContent = `Á¡¼ö: ${score}`;
+            document.getElementById('score').textContent = `ì ìˆ˜: ${score}`;
             document.getElementById('answer-input').value = '';
 
             card1.classList.remove('flipped');
@@ -347,7 +348,7 @@
 
         function updateTimer() {
             timeLeft--;
-            document.getElementById('timer').textContent = `³²Àº ½Ã°£: ${timeLeft}ÃÊ`;
+            document.getElementById('timer').textContent = `ë‚¨ì€ ì‹œê°„: ${timeLeft}ì´ˆ`;
             
             if (timeLeft === 10) {
                 bonusTime = true;
@@ -364,7 +365,7 @@
                 rankings.sort((a, b) => b.score - a.score);
                 rankings = rankings.slice(0, 3);
                 updateRankings();
-                alert(`°ÔÀÓ Á¾·á! ÃÖÁ¾ Á¡¼ö: ${score}`);
+                alert(`ê²Œì„ ì¢…ë£Œ! ìµœì¢… ì ìˆ˜: ${score}`);
                 document.getElementById('setup').style.display = 'block';
                 document.getElementById('game-screen').style.display = 'none';
             }
@@ -373,13 +374,13 @@
         function updateRankings() {
             const rankingList = document.getElementById('ranking-list');
             rankingList.innerHTML = '';
-            const medals = ['??', '??', '??'];
+            const medals = ['ğŸ¥‡', 'ğŸ¥ˆ', 'ğŸ¥‰'];
             rankings.forEach((player, index) => {
                 const rankingItem = document.createElement('div');
                 rankingItem.className = 'ranking-item';
                 rankingItem.innerHTML = `
                     <span class="medal">${medals[index] || ''}</span>
-                    <span>${player.name}: ${player.score}Á¡</span>
+                    <span>${player.name}: ${player.score}ì </span>
                 `;
                 rankingList.appendChild(rankingItem);
             });
@@ -397,7 +398,8 @@
         }
 
         function clearAnswer() {
-            document.getElementById('answer-input').value = '';
+            let currentAnswer = document.getElementById('answer-input').value;
+            document.getElementById('answer-input').value = currentAnswer.slice(0, -1);
         }
 
         function adjustMobileLayout() {
