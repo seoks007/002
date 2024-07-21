@@ -139,9 +139,6 @@
                 right: 10px;
                 max-width: none;
             }
-            #answer-input {
-                pointer-events: none;
-            }
         }
     </style>
 </head>
@@ -168,7 +165,7 @@
         <div id="game-board"></div>
         <div id="equation-container">
             <div id="equation"></div>
-            <input type="number" id="answer-input" placeholder="답" readonly>
+            <input type="number" id="answer-input" placeholder="답">
             <button id="submit-answer">제출</button>
         </div>
         <div id="score">점수: 0</div>
@@ -374,7 +371,8 @@
                     card.style.backgroundColor = 'red';
                 });
             }
-          if (timeLeft <= 0) {
+            
+            if (timeLeft <= 0) {
                 clearInterval(gameInterval);
                 const name = document.getElementById('name-input').value.trim();
                 rankings.push({name: name, score: score});
@@ -414,8 +412,7 @@
         }
 
         function clearAnswer() {
-            let currentAnswer = document.getElementById('answer-input').value;
-            document.getElementById('answer-input').value = currentAnswer.slice(0, -1);
+            document.getElementById('answer-input').value = '';
         }
 
         function adjustMobileLayout() {
@@ -423,6 +420,9 @@
                 const gameScreen = document.getElementById('game-screen');
                 const gameBoard = document.getElementById('game-board');
                 const numpad = document.getElementById('numpad');
+                const equationContainer = document.getElementById('equation-container');
+                const scoreElement = document.getElementById('score');
+                const timerElement = document.getElementById('timer');
                 
                 const screenHeight = window.innerHeight;
                 const numpadHeight = numpad.offsetHeight;
@@ -434,8 +434,17 @@
                 // Adjust numpad width to fit screen
                 numpad.style.width = `${window.innerWidth - 20}px`; // 20px for margins
                 numpad.style.display = 'grid';
+                
+                // Rearrange elements for mobile layout
+                gameScreen.innerHTML = '';
+                gameScreen.appendChild(equationContainer);
+                gameScreen.appendChild(gameBoard);
+                gameScreen.appendChild(scoreElement);
+                gameScreen.appendChild(timerElement);
+                gameScreen.appendChild(numpad);
             } else {
                 document.getElementById('numpad').style.display = 'none';
+                // Reset layout for desktop version if needed
             }
         }
 
