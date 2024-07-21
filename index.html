@@ -2,14 +2,20 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>덧셈 카드 게임</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         #setup, #game-screen {
             max-width: 600px;
@@ -56,39 +62,41 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px 0;
+            margin: 10px 0;
         }
         #equation, #answer-input, #submit-answer {
-            font-size: 24px;
+            font-size: 18px;
             margin: 0 5px;
         }
         #praise {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 5px 0;
             color: red;
         }
         #incorrect-message {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 5px 0;
             color: blue;
         }
         #bonus-time {
             color: red;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         #numpad {
-            display: none;
+            display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 5px;
+            width: 100%;
             max-width: 300px;
-            margin: 20px auto;
+            margin: 10px auto;
         }
         .numpad-btn {
-            font-size: 24px;
+            font-size: 18px;
             padding: 10px;
+            width: 100%;
         }
         .ranking-item {
             display: flex;
@@ -102,10 +110,7 @@
         }
         @media (max-width: 768px) {
             body {
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-                padding: 0;
+                padding: 10px;
             }
             #game-screen {
                 display: flex;
@@ -115,21 +120,22 @@
                 padding: 10px;
             }
             #game-board {
-                height: 60vh;
-                margin: 0;
-                max-width: none;
+                flex: 1;
+                margin: 0 0 10px 0;
             }
-            #equation-container {
-                margin: 10px 0;
+            .card {
+                font-size: 18px;
+            }
+            #equation-container, #score, #timer {
+                font-size: 14px;
+                margin: 5px 0;
             }
             #numpad {
-                display: grid;
                 position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background-color: #f0f0f0;
-                padding: 10px;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
             }
         }
     </style>
@@ -259,6 +265,8 @@
 
             clearInterval(gameInterval);
             gameInterval = setInterval(updateTimer, 1000);
+            
+            adjustMobileLayout();
         }
 
         function flipCard(card, index) {
@@ -368,7 +376,7 @@
             rankings.forEach((player, index) => {
                 const rankingItem = document.createElement('div');
                 rankingItem.className = 'ranking-item';
-                rankingItem.innerHTML = `
+               rankingItem.innerHTML = `
                     <span class="medal">${medals[index] || ''}</span>
                     <span>${player.name}: ${player.score}점</span>
                 `;
@@ -392,6 +400,24 @@
             document.getElementById('answer-input').value = currentAnswer.slice(0, -1);
         }
 
+        function adjustMobileLayout() {
+            if (window.innerWidth <= 768) {
+                const gameScreen = document.getElementById('game-screen');
+                const gameBoard = document.getElementById('game-board');
+                const numpad = document.getElementById('numpad');
+                
+                const screenHeight = window.innerHeight;
+                const numpadHeight = numpad.offsetHeight;
+                const availableHeight = screenHeight - numpadHeight - 20; // 20px for margins
+                
+                gameBoard.style.height = `${availableHeight * 0.6}px`;
+                gameScreen.style.height = `${availableHeight}px`;
+                
+                // Adjust numpad width to fit screen
+                numpad.style.width = `${window.innerWidth - 20}px`; // 20px for margins
+            }
+        }
+
         document.getElementById('start-game').addEventListener('click', startGame);
         document.getElementById('submit-answer').addEventListener('click', checkAnswer);
         document.getElementById('answer-input').addEventListener('keyup', function(event) {
@@ -410,15 +436,6 @@
                 reader.readAsDataURL(file);
             }
         });
-
-        // 모바일 환경에서 화면 크기 조정
-        function adjustMobileLayout() {
-            if (window.innerWidth <= 768) {
-                const gameBoard = document.getElementById('game-board');
-                const screenHeight = window.innerHeight;
-                gameBoard.style.height = `${screenHeight * 0.6}px`;
-            }
-        }
 
         window.addEventListener('resize', adjustMobileLayout);
         window.addEventListener('load', adjustMobileLayout);
