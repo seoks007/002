@@ -9,7 +9,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
@@ -86,7 +86,7 @@
             margin-top: 5px;
         }
         #numpad {
-            display: grid;
+            display: none;
             grid-template-columns: repeat(3, 1fr);
             gap: 5px;
             width: 100%;
@@ -131,6 +131,7 @@
                 margin: 5px 0;
             }
             #numpad {
+                display: grid;
                 position: fixed;
                 bottom: 10px;
                 left: 10px;
@@ -161,7 +162,6 @@
     <div id="game-screen" style="display:none;">
         <div id="praise"></div>
         <div id="game-board"></div>
-        <div id="incorrect-message"></div>
         <div id="equation-container">
             <div id="equation"></div>
             <input type="number" id="answer-input" placeholder="답">
@@ -170,6 +170,7 @@
         <div id="score">점수: 0</div>
         <div id="timer">남은 시간: 60초</div>
         <div id="bonus-time" style="display:none;">보너스 구간! (점수 x2)</div>
+        <div id="incorrect-message"></div>
         <div id="numpad">
             <button class="numpad-btn" onclick="appendToAnswer(1)">1</button>
             <button class="numpad-btn" onclick="appendToAnswer(2)">2</button>
@@ -181,7 +182,7 @@
             <button class="numpad-btn" onclick="appendToAnswer(8)">8</button>
             <button class="numpad-btn" onclick="appendToAnswer(9)">9</button>
             <button class="numpad-btn" onclick="appendToAnswer(0)">0</button>
-            <button class="numpad-btn" onclick="clearAnswer()">??</button>
+            <button class="numpad-btn" onclick="clearAnswer()">Del</button>
             <button class="numpad-btn" onclick="checkAnswer()">Enter</button>
         </div>
     </div>
@@ -304,13 +305,13 @@
                 score += pointsEarned;
 
                 const praise = praises[Math.floor(Math.random() * praises.length)];
-                document.getElementById('praise').textContent = `${praise} +${pointsEarned}점`;
+                document.getElementById('praise').innerHTML = `${praise}<br>+${pointsEarned}점`;
                 document.getElementById('incorrect-message').textContent = '';
 
                 if (consecutiveCorrect % 2 === 0) {
                     const bonus = consecutiveCorrect;
                     score += bonus;
-                    document.getElementById('praise').textContent += ` 연속 정답 ${consecutiveCorrect}회 +${bonus}점`;
+                    document.getElementById('praise').innerHTML += `<br>연속 정답 ${consecutiveCorrect}회<br>+${bonus}점`;
                 }
             } else {
                 score = Math.max(0, score - 1);
@@ -376,7 +377,7 @@
             rankings.forEach((player, index) => {
                 const rankingItem = document.createElement('div');
                 rankingItem.className = 'ranking-item';
-               rankingItem.innerHTML = `
+                rankingItem.innerHTML = `
                     <span class="medal">${medals[index] || ''}</span>
                     <span>${player.name}: ${player.score}점</span>
                 `;
@@ -396,8 +397,7 @@
         }
 
         function clearAnswer() {
-            let currentAnswer = document.getElementById('answer-input').value;
-            document.getElementById('answer-input').value = currentAnswer.slice(0, -1);
+            document.getElementById('answer-input').value = '';
         }
 
         function adjustMobileLayout() {
@@ -415,6 +415,9 @@
                 
                 // Adjust numpad width to fit screen
                 numpad.style.width = `${window.innerWidth - 20}px`; // 20px for margins
+                numpad.style.display = 'grid';
+            } else {
+                document.getElementById('numpad').style.display = 'none';
             }
         }
 
