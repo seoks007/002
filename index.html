@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>덧셈 카드 게임</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        #setup, #game-screen {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+        }
+        #setup-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #setup-line > * {
+            margin: 0 5px;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        .card {
+            aspect-ratio: 1;
+            background-color: #ddd;
+            border: 2px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-size: cover;
+            background-position: center;
+        }
+        .card.flipped {
+            background-image: none !important;
+            background-color: #fff;
+        }
+        #equation-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        #equation, #answer-input, #submit-answer {
+            font-size: 24px;
+            margin: 0 5px;
+        }
+        #praise {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: red;
+        }
+        #incorrect-message {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: blue;
+        }
+        #bonus-time {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #numpad {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .numpad-btn {
+            font-size: 24px;
+            padding: 10px;
+        }
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .medal {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+        @media (max-width: 768px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                padding: 0;
+            }
+            #game-screen {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                margin: 0;
+                padding: 10px;
+            }
+            #game-board {
+                height: 60vh;
+                margin: 0;
+                max-width: none;
+            }
+            #equation-container {
+                margin: 10px 0;
+            }
+            #numpad {
+                display: grid;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: #f0f0f0;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <h1>덧셈 카드 게임</h1>
+        <div id="setup-line">
+            <input type="text" id="name-input" placeholder="이름을 입력하세요">
+            <select id="level-select">
+                <option value="1">1단계 (1~9)</option>
+                <option value="2">2단계 (1~50)</option>
+                <option value="3">3단계 (11~99)</option>
+            </select>
+            <button id="start-game">게임 시작</button>
+        </div>
+        <input type="file" id="image-upload" accept="image/*">
+        <div id="rankings">
+            <h2>순위</h2>
+            <div id="ranking-list"></div>
+        </div>
+    </div>
+    <div id="game-screen" style="display:none;">
+        <div id="praise"></div>
+        <div id="game-board"></div>
+        <div id="incorrect-message"></div>
+        <div id="equation-container">
+            <div id="equation"></div>
+            <input type="number" id="answer-input" placeholder="답">
+            <button id="submit-answer">제출</button>
+        </div>
+        <div id="score">점수: 0</div>
+        <div id="timer">남은 시간: 60초</div>
+        <div id="bonus-time" style="display:none;">보너스 구간! (점수 x2)</div>
+        <div id="numpad">
+            <button class="numpad-btn" onclick="appendToAnswer(1)">1</button>
+            <button class="numpad-btn" onclick="appendToAnswer(2)">2</button>
+            <button class="numpad-btn" onclick="appendToAnswer(3)">3</button>
+            <button class="numpad-btn" onclick="appendToAnswer(4)">4</button>
+            <button class="numpad-btn" onclick="appendToAnswer(5)">5</button>
+            <button class="numpad-btn" onclick="appendToAnswer(6)">6</button>
+            <button class="numpad-btn" onclick="appendToAnswer(7)">7</button>
+            <button class="numpad-btn" onclick="appendToAnswer(8)">8</button>
+            <button class="numpad-btn" onclick="appendToAnswer(9)">9</button>
+            <button class="numpad-btn" onclick="appendToAnswer(0)">0</button>
+            <button class="numpad-btn" onclick="clearAnswer()">??</button>
+            <button class="numpad-btn" onclick="checkAnswer()">Enter</button>
+        </div>
+    </div>
+
+    <script>
+        let cards = [];
+        let selectedCards = [];
+        let score = 0;
+        let timeLeft = 60;
+        let gameInterval;
+        let rankings = [];
+        let currentLevel = 1;
+        let consecutiveCorrect = 0;
+        let bonusTime = false;
+        let uploadedImage = null;
+
+        const praises = [
+            "훌륭해요!", "대단해요!", "멋져요!", "완벽해요!", "놀라워요!",
+            "천재시네요!", "최고예요!", "대박이에요!", "믿을 수 없어요!", "환상적이에요!",
+            "굉장해요!", "뛰어나요!", "기가 막혀요!", "대단한 실력이에요!", "와우!",
+            "끝내주는데요?", "당신은 천재!", "놀라운 실력이에요!", "대단한 두뇌예요!", "박수 쳐 드려요!"
+        ];
+
+        const incorrectMessages = [
+            "아쉬워요.", "다음에 더 잘할 수 있을 거예요.", "조금만 더 집중해봐요.", 
+            "실수는 누구나 해요.", "포기하지 마세요!", "힘내세요!", "다시 한 번 해보세요.",
+            "거의 다 왔어요!", "조금만 더 노력하면 돼요!", "다음 기회에 꼭 성공할 거예요!"
+        ];
+
+        function startGame() {
+            const name = document.getElementById('name-input').value.trim();
+            if (!name) {
+                alert('이름을 입력해주세요.');
+                return;
+            }
+
+            currentLevel = parseInt(document.getElementById('level-select').value);
+            cards = [];
+            selectedCards = [];
+            score = 0;
+            consecutiveCorrect = 0;
+            timeLeft = 60;
+            bonusTime = false;
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            document.getElementById('score').textContent = '점수: 0';
+            document.getElementById('timer').textContent = '남은 시간: 60초';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('equation').textContent = '';
+            document.getElementById('praise').textContent = '';
+            document.getElementById('incorrect-message').textContent = '';
+
+            let min, max;
+            switch (currentLevel) {
+                case 1: min = 1; max = 9; break;
+                case 2: min = 1; max = 50; break;
+                case 3: min = 11; max = 99; break;
+            }
+
+            for (let i = 0; i < 20; i++) {
+                let randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                cards.push(randomNum);
+            }
+
+            shuffleArray(cards);
+
+            cards.forEach((number, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.number = number;
+                if (uploadedImage) {
+                    card.style.backgroundImage = `url(${uploadedImage})`;
+                    card.style.backgroundPosition = `${(index % 4) * 33.33}% ${Math.floor(index / 4) * 25}%`;
+                    card.style.backgroundSize = '400% 500%';
+                }
+                card.addEventListener('click', () => flipCard(card, index));
+                gameBoard.appendChild(card);
+            });
+
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateTimer, 1000);
+        }
+
+        function flipCard(card, index) {
+            if (selectedCards.length < 2 && !selectedCards.includes(index) && !card.classList.contains('flipped')) {
+                card.textContent = card.dataset.number;
+                card.classList.add('flipped');
+                selectedCards.push(index);
+
+                if (selectedCards.length === 2) {
+                    updateEquation();
+                    document.getElementById('answer-input').focus();
+                }
+            }
+        }
+
+        function updateEquation() {
+            const card1 = document.getElementsByClassName('card')[selectedCards[0]];
+            const card2 = document.getElementsByClassName('card')[selectedCards[1]];
+            const num1 = parseInt(card1.dataset.number);
+            const num2 = parseInt(card2.dataset.number);
+            document.getElementById('equation').textContent = `${num1} + ${num2} = `;
+        }
+
+        function checkAnswer() {
+            if (selectedCards.length !== 2) return;
+
+            const card1 = document.getElementsByClassName('card')[selectedCards[0]];
+            const card2 = document.getElementsByClassName('card')[selectedCards[1]];
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+            const correctSum = parseInt(card1.dataset.number) + parseInt(card2.dataset.number);
+
+            if (userAnswer === correctSum) {
+                consecutiveCorrect++;
+                let pointsEarned = bonusTime ? 2 : 1;
+                score += pointsEarned;
+
+                const praise = praises[Math.floor(Math.random() * praises.length)];
+                document.getElementById('praise').textContent = `${praise} +${pointsEarned}점`;
+                document.getElementById('incorrect-message').textContent = '';
+
+                if (consecutiveCorrect % 2 === 0) {
+                    const bonus = consecutiveCorrect;
+                    score += bonus;
+                    document.getElementById('praise').textContent += ` 연속 정답 ${consecutiveCorrect}회 +${bonus}점`;
+                }
+            } else {
+                score = Math.max(0, score - 1);
+                consecutiveCorrect = 0;
+                const incorrectMessage = incorrectMessages[Math.floor(Math.random() * incorrectMessages.length)];
+                document.getElementById('incorrect-message').textContent = `${incorrectMessage} -1점`;
+                document.getElementById('praise').textContent = '';
+            }
+
+            document.getElementById('score').textContent = `점수: ${score}`;
+            document.getElementById('answer-input').value = '';
+
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            card1.textContent = '';
+            card2.textContent = '';
+
+            selectedCards = [];
+            shuffleArray(cards);
+            updateCardPositions();
+        }
+
+        function updateCardPositions() {
+            const gameBoard = document.getElementById('game-board');
+            const cardElements = Array.from(gameBoard.children);
+            cardElements.forEach((card, index) => {
+                card.dataset.number = cards[index];
+                if (uploadedImage) {
+                    card.style.backgroundPosition = `${(index % 4) * 33.33}% ${Math.floor(index / 4) * 25}%`;
+                }
+            });
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('timer').textContent = `남은 시간: ${timeLeft}초`;
+            
+            if (timeLeft === 10) {
+                bonusTime = true;
+                document.getElementById('bonus-time').style.display = 'block';
+                document.querySelectorAll('.card:not(.flipped)').forEach(card => {
+                    card.style.backgroundColor = 'red';
+                });
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(gameInterval);
+                const name = document.getElementById('name-input').value.trim();
+                rankings.push({name: name, score: score});
+                rankings.sort((a, b) => b.score - a.score);
+                rankings = rankings.slice(0, 3);
+                updateRankings();
+                alert(`게임 종료! 최종 점수: ${score}`);
+                document.getElementById('setup').style.display = 'block';
+                document.getElementById('game-screen').style.display = 'none';
+            }
+        }
+
+        function updateRankings() {
+            const rankingList = document.getElementById('ranking-list');
+            rankingList.innerHTML = '';
+            const medals = ['??', '??', '??'];
+            rankings.forEach((player, index) => {
+                const rankingItem = document.createElement('div');
+                rankingItem.className = 'ranking-item';
+                rankingItem.innerHTML = `
+                    <span class="medal">${medals[index] || ''}</span>
+                    <span>${player.name}: ${player.score}점</span>
+                `;
+                rankingList.appendChild(rankingItem);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function appendToAnswer(num) {
+            document.getElementById('answer-input').value += num;
+        }
+
+        function clearAnswer() {
+            let currentAnswer = document.getElementById('answer-input').value;
+            document.getElementById('answer-input').value = currentAnswer.slice(0, -1);
+        }
+
+        document.getElementById('start-game').addEventListener('click', startGame);
+        document.getElementById('submit-answer').addEventListener('click', checkAnswer);
+        document.getElementById('answer-input').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 모바일 환경에서 화면 크기 조정
+        function adjustMobileLayout() {
+            if (window.innerWidth <= 768) {
+                const gameBoard = document.getElementById('game-board');
+                const screenHeight = window.innerHeight;
+                gameBoard.style.height = `${screenHeight * 0.6}px`;
+            }
+        }
+
+        window.addEventListener('resize', adjustMobileLayout);
+        window.addEventListener('load', adjustMobileLayout);
+    </script>
+</body>
+</html>
