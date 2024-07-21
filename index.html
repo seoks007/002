@@ -38,7 +38,8 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin: 20px auto;
-            max-width: 400px;
+            max-width: 500px;
+            width: 100%;
         }
         .card {
             aspect-ratio: 1;
@@ -53,6 +54,7 @@
             font-weight: bold;
             background-size: cover;
             background-position: center;
+            min-height: 80px;
         }
         .card.flipped {
             background-image: none !important;
@@ -108,6 +110,17 @@
             height: 30px;
             margin-right: 10px;
         }
+        #score-timer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        #score {
+            color: red;
+            font-weight: bold;
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -123,12 +136,14 @@
             #game-board {
                 flex: 1;
                 margin: 0 0 10px 0;
+                max-width: 100%;
             }
             .card {
                 font-size: 18px;
+                min-height: 60px;
             }
-            #equation-container, #score, #timer {
-                font-size: 14px;
+            #equation-container, #score-timer {
+                font-size: 16px;
                 margin: 5px 0;
             }
             #numpad {
@@ -138,6 +153,9 @@
                 left: 10px;
                 right: 10px;
                 max-width: none;
+            }
+            #answer-input {
+                pointer-events: none;
             }
         }
     </style>
@@ -168,8 +186,10 @@
             <input type="number" id="answer-input" placeholder="답">
             <button id="submit-answer">제출</button>
         </div>
-        <div id="score">점수: 0</div>
-        <div id="timer">남은 시간: 60초</div>
+        <div id="score-timer">
+            <div id="score">점수: 0</div>
+            <div id="timer">남은 시간: 60초</div>
+        </div>
         <div id="bonus-time" style="display:none;">보너스 구간! (점수 x2)</div>
         <div id="incorrect-message"></div>
         <div id="numpad">
@@ -360,7 +380,7 @@
             });
         }
 
-        function updateTimer() {
+       function updateTimer() {
             timeLeft--;
             document.getElementById('timer').textContent = `남은 시간: ${timeLeft}초`;
             
@@ -416,14 +436,15 @@
         }
 
         function adjustMobileLayout() {
-            if (window.innerWidth <= 768) {
-                const gameScreen = document.getElementById('game-screen');
-                const gameBoard = document.getElementById('game-board');
-                const numpad = document.getElementById('numpad');
-                const equationContainer = document.getElementById('equation-container');
-                const scoreElement = document.getElementById('score');
-                const timerElement = document.getElementById('timer');
-                
+            const isMobile = window.innerWidth <= 768;
+            const answerInput = document.getElementById('answer-input');
+            const gameScreen = document.getElementById('game-screen');
+            const gameBoard = document.getElementById('game-board');
+            const numpad = document.getElementById('numpad');
+            const equationContainer = document.getElementById('equation-container');
+            const scoreTimer = document.getElementById('score-timer');
+            
+            if (isMobile) {
                 const screenHeight = window.innerHeight;
                 const numpadHeight = numpad.offsetHeight;
                 const availableHeight = screenHeight - numpadHeight - 20; // 20px for margins
@@ -437,14 +458,21 @@
                 
                 // Rearrange elements for mobile layout
                 gameScreen.innerHTML = '';
-                gameScreen.appendChild(equationContainer);
                 gameScreen.appendChild(gameBoard);
-                gameScreen.appendChild(scoreElement);
-                gameScreen.appendChild(timerElement);
+                gameScreen.appendChild(equationContainer);
+                gameScreen.appendChild(scoreTimer);
                 gameScreen.appendChild(numpad);
+
+                // Disable keyboard input for mobile
+                answerInput.readOnly = true;
             } else {
-                document.getElementById('numpad').style.display = 'none';
-                // Reset layout for desktop version if needed
+                // Desktop layout
+                gameBoard.style.height = '';
+                gameScreen.style.height = '';
+                numpad.style.display = 'none';
+                
+                // Enable keyboard input for desktop
+                answerInput.readOnly = false;
             }
         }
 
